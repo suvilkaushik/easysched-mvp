@@ -1,30 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { mockMessages } from '@/lib/data';
 import MessageThread from './MessageThread';
 import { formatTime } from '@/lib/utils';
+import { Message } from '@/types';
 
 export default function MessagingPanel() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>(mockMessages);
   
   // Group messages by client
-  const clientMessages = mockMessages.reduce((acc, msg) => {
-    if (!acc[msg.clientId]) {
-      acc[msg.clientId] = [];
-    }
-    acc[msg.clientId].push(msg);
-    return acc;
-  }, {} as Record<string, typeof mockMessages>);
+  const clientMessages = useMemo(() => {
+    return messages.reduce((acc, msg) => {
+      if (!acc[msg.clientId]) {
+        acc[msg.clientId] = [];
+      }
+      acc[msg.clientId].push(msg);
+      return acc;
+    }, {} as Record<string, Message[]>);
+  }, [messages]);
   
-  const conversations = Object.entries(clientMessages).map(([clientId, messages]) => ({
-    clientId,
-    clientName: messages[0].clientName,
-    lastMessage: messages[messages.length - 1],
-    unreadCount: messages.filter(m => !m.read && m.sender === 'client').length,
-  }));
+  const conversations = useMemo(() => {
+    return Object.entries(clientMessages).map(([clientId, msgs]) => ({
+      clientId,
+      clientName: msgs[0].clientName,
+      lastMessage: msgs[msgs.length - 1],
+      unreadCount: msgs.filter(m => !m.read && m.sender === 'client').length,
+    }));
+  }, [clientMessages]);
   
   const selectedMessages = selectedClientId ? clientMessages[selectedClientId] || [] : [];
+  const selectedClientName = selectedMessages.length > 0 ? selectedMessages[0].clientName : '';
+
+  const handleSendMessage = (content: string) => {
+    if (!content.trim() || !selectedClientId) return;
+    
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      clientId: selectedClientId,
+      clientName: selectedClientName,
+      content: content.trim(),
+      sender: 'admin',
+      timestamp: new Date(),
+      read: true,
+    };
+    
+    setMessages(prev => [...prev, newMessage]);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow flex h-[600px]">
@@ -66,7 +89,11 @@ export default function MessagingPanel() {
         </div>
       </div>
       
-      <MessageThread messages={selectedMessages} />
+      <MessageThread 
+        messages={selectedMessages} 
+        clientId={selectedClientId}
+        onSendMessage={handleSendMessage}
+      />
     </div>
   );
 }

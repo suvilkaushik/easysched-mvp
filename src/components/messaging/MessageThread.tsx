@@ -1,11 +1,47 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
 import { Message } from '@/types';
 import { formatTime } from '@/lib/utils';
 
 interface MessageThreadProps {
   messages: Message[];
+  clientId: string | null;
+  onSendMessage: (content: string) => void;
 }
 
-export default function MessageThread({ messages }: MessageThreadProps) {
+export default function MessageThread({ messages, clientId, onSendMessage }: MessageThreadProps) {
+  const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Clear input when switching conversations
+  useEffect(() => {
+    setInputValue('');
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [clientId]);
+
+  // Scroll to bottom when new messages are added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = () => {
+    if (inputValue.trim() && clientId) {
+      onSendMessage(inputValue);
+      setInputValue('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   if (messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -48,16 +84,25 @@ export default function MessageThread({ messages }: MessageThreadProps) {
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
       
       <div className="bg-white border-t border-gray-200 p-4">
         <div className="flex gap-2">
           <input
+            ref={inputRef}
             type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button 
+            onClick={handleSend}
+            disabled={!inputValue.trim() || !clientId}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
             Send
           </button>
         </div>
