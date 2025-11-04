@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   output: 'export',
   // Set base path if deploying to a subdirectory (e.g., /repository-name)
   // basePath: process.env.NODE_ENV === 'production' ? '/your-repo-name' : '',
+  trailingSlash: true, // Required for GitHub Pages compatibility - ensures proper routing
   images: {
     unoptimized: true, // Required for static export
   },

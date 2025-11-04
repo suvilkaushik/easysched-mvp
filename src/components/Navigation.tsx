@@ -23,7 +23,10 @@ export default function Navigation() {
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                // Normalize pathname for comparison (handle trailing slashes)
+                const normalizedPathname = pathname?.endsWith('/') ? pathname.slice(0, -1) || '/' : pathname;
+                const normalizedHref = item.href === '/' ? '/' : (item.href.endsWith('/') ? item.href.slice(0, -1) : item.href);
+                const isActive = normalizedPathname === normalizedHref;
                 return (
                   <Link
                     key={item.name}
