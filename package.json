@@ -12,7 +12,19 @@
   "dependencies": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.6"
+    "next": "15.5.6",
+    "next-auth": "^4.22.1",
+    "mongodb": "^5.8.0",
+    "bcrypt": "^5.1.0",
+    "argon2": "^0.30.0",
+    "dotenv": "^16.3.1"
+  },
+  "scripts": {
+    "inspect-db": "node scripts/inspect-db.js",
+    "seed-users": "node scripts/seed-users.js",
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start"
   },
   "devDependencies": {
     "typescript": "^5",
