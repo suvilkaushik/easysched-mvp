@@ -8,10 +8,10 @@ export default async function ClientPortalPage() {
   if (!session) redirect("/api/auth/signin");
 
   const db = await getDb();
-  const userId = (session as any).user?.id;
+  const ownerId = (session as any).user?.id;
   const clientDocs = await db
     .collection("clients")
-    .find({ $or: [{ owner: userId }, { userId: userId }] })
+    .find({ owner: ownerId })
     .toArray();
 
   const clients = clientDocs.map((c: any) => ({

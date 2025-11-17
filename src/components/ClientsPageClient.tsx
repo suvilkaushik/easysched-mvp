@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
 import { Client } from "@/types";
 
@@ -13,6 +13,8 @@ export default function ClientsPageClient({
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [viewingClientId, setViewingClientId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Client>>({});
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState<Partial<Client>>({ name: "" });
 
   const handleView = (client: Client) => {
     if (viewingClientId === client.id) {
@@ -39,29 +41,97 @@ export default function ClientsPageClient({
   };
 
   const handleSave = (clientId: string) => {
-    setClients(
-      clients.map((client) =>
-        client.id === clientId ? { ...client, ...editFormData } : client
-      )
-    );
-    setEditingClientId(null);
-    setEditFormData({});
+    // persist update to server
+    const payload = {
+      name: editFormData.name,
+      email: editFormData.email,
+      phone: editFormData.phone,
+    }
+
+    fetch(`/api/clients/${clientId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.client) {
+          setClients((cur) => cur.map((c) => (c.id === clientId ? { ...c, ...data.client } : c)));
+        } else {
+          alert(data?.error || "Update failed")
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        alert("Update failed")
+      })
+      .finally(() => {
+        setEditingClientId(null)
+        setEditFormData({})
+      })
   };
 
   const handleDelete = (clientId: string) => {
     if (confirm("Are you sure you want to delete this client?")) {
-      setClients(clients.filter((client) => client.id !== clientId));
-      if (editingClientId === clientId) {
-        setEditingClientId(null);
-        setEditFormData({});
-      }
-      if (viewingClientId === clientId) setViewingClientId(null);
+      // call API
+      fetch(`/api/clients/${clientId}`, { method: "DELETE" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.ok) {
+            setClients((cur) => cur.filter((client) => client.id !== clientId))
+            if (editingClientId === clientId) {
+              setEditingClientId(null)
+              setEditFormData({})
+            }
+            if (viewingClientId === clientId) setViewingClientId(null)
+          } else {
+            alert(data?.error || 'Delete failed')
+          }
+        })
+        .catch((err) => { console.error(err); alert('Delete failed') })
     }
   };
 
   const handleInputChange = (field: keyof Client, value: string) => {
     setEditFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  // fetch latest clients (refresh) on mount
+  useEffect(() => {
+    let mounted = true
+    fetch('/api/clients')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!mounted) return
+        if (data?.clients) setClients(data.clients.map((c: any) => ({ ...c, createdAt: c.createdAt ? new Date(c.createdAt) : new Date() })))
+      })
+      .catch((err) => console.error('Failed to refresh clients', err))
+
+    return () => { mounted = false }
+  }, [])
+
+  const handleCreate = () => {
+    if (!createForm.name) return alert('Name is required')
+    setCreating(true)
+    fetch('/api/clients', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(createForm),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.client) {
+          const c = data.client
+          if (c.createdAt) c.createdAt = new Date(c.createdAt)
+          setClients((cur) => [ { id: c._id || c.id || String(Math.random()), name: c.name, email: c.email, phone: c.phone || '', createdAt: c.createdAt || new Date() }, ...cur ])
+          setCreateForm({ name: '' })
+        } else {
+          alert(data?.error || 'Create failed')
+        }
+      })
+      .catch((err) => { console.error(err); alert('Create failed') })
+      .finally(() => setCreating(false))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,9 +141,48 @@ export default function ClientsPageClient({
             <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
             <p className="text-gray-600 mt-2">Manage your client database</p>
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Add Client
-          </button>
+          {!creating ? (
+            <button
+              onClick={() => setCreating(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Add Client
+            </button>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <input
+                value={createForm.name || ''}
+                onChange={(e) => setCreateForm((p) => ({ ...p, name: e.target.value }))}
+                placeholder="Client name"
+                className="px-3 py-2 border rounded"
+              />
+              <input
+                value={createForm.email || ''}
+                onChange={(e) => setCreateForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="Email"
+                className="px-3 py-2 border rounded"
+              />
+              <input
+                value={createForm.phone || ''}
+                onChange={(e) => setCreateForm((p) => ({ ...p, phone: e.target.value }))}
+                placeholder="Phone"
+                className="px-3 py-2 border rounded"
+              />
+              <button
+                onClick={handleCreate}
+                disabled={creating}
+                className="px-3 py-2 bg-green-600 text-white rounded"
+              >
+                {creating ? 'Creating…' : 'Create'}
+              </button>
+              <button
+                onClick={() => { setCreating(false); setCreateForm({ name: '' }) }}
+                className="px-3 py-2 border rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">

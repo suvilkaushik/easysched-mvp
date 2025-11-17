@@ -10,11 +10,11 @@ export default async function ClientsPage() {
   }
 
   const db = await getDb();
-  // support both `owner` (string) and `userId` fields
-  const userId = (session as any).user?.id;
+  // query clients by owner (normalized field)
+  const ownerId = (session as any).user?.id;
   const clientDocs = await db
     .collection("clients")
-    .find({ $or: [{ owner: userId }, { userId: userId }] })
+    .find({ owner: ownerId })
     .toArray();
 
   const clients = clientDocs.map((c: any) => ({

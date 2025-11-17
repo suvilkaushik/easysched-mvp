@@ -1,27 +1,30 @@
+#!/usr/bin/env node
 require("dotenv").config({ path: ".env.local" });
 const { MongoClient } = require("mongodb");
 
-async function inspect() {
+async function run() {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error(
-      "Please set MONGODB_URI in .env.local before running this script."
-    );
+    console.error("Please set MONGODB_URI in .env.local or environment");
     process.exit(1);
   }
 
-  const client = new MongoClient(uri);
+  const dbName =
+    process.env.MONGODB_DB ||
+    process.env.NEXT_PUBLIC_MONGODB_DB ||
+    (uri && uri.split("/").pop().split("?")[0]) ||
+    "easysched_dev_suv";
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
+  await client.connect();
   try {
-    await client.connect();
-    const dbName = uri.split("/").pop().split("?")[0] || "easysched_dev_suv";
     const db = client.db(dbName);
+    console.log("Database:", db.databaseName);
     const collections = await db.listCollections().toArray();
-    console.log("Database:", dbName);
     console.log("Collections:");
     for (const c of collections) {
-      const name = c.name;
-      const count = await db.collection(name).countDocuments();
-      console.log(` - ${name} (count: ${count})`);
+      const coll = db.collection(c.name);
+      const count = await coll.countDocuments();
+      console.log(` - ${c.name} (count: ${count})`);
     }
 
     async function sample(name) {
@@ -30,22 +33,25 @@ async function inspect() {
       console.log(`\nSample documents from ${name}:`);
       if (docs.length === 0) console.log("  (no documents)");
       docs.forEach((d, i) => {
+        // convert ObjectId to string for readability
+        if (d._id && d._id.toString) d._id = d._id.toString();
         console.log(`  [${i}]`, JSON.stringify(d, null, 2));
       });
     }
 
-    // Inspect typical collections
+    // show samples for users and clients if present
     const inspectNames = ["users", "clients"];
     for (const name of inspectNames) {
       const exists = collections.some((c) => c.name === name);
       if (exists) await sample(name);
       else console.log(`\nCollection '${name}' not found.`);
     }
-  } catch (err) {
-    console.error("Error inspecting DB:", err);
   } finally {
     await client.close();
   }
 }
 
-inspect();
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "inspect-db": "node scripts/inspect-db.js",
+    "seed-users": "node scripts/seed-users.js",
     "dev": "next dev --turbopack",
     "build": "next build",
     "build:turbo": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "react": "19.1.0",
@@ -18,13 +20,6 @@
     "bcrypt": "^5.1.0",
     "argon2": "^0.30.0",
     "dotenv": "^16.3.1"
-  },
-  "scripts": {
-    "inspect-db": "node scripts/inspect-db.js",
-    "seed-users": "node scripts/seed-users.js",
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start"
   },
   "devDependencies": {
     "typescript": "^5",
