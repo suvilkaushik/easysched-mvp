@@ -78,3 +78,5 @@ next-env.d.ts
 scripts/clients_backup_*
 *.local
 *.log
+.env.local
+scripts/sample-credentials.txt

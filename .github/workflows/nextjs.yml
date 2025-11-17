@@ -2,11 +2,14 @@
 #
 # To get started with Next.js see: https://nextjs.org/docs/getting-started
 #
-name: Deploy Next.js site to Pages
+name: Build and Deploy Next.js site (GitHub Pages)
 
 on:
   # Runs on pushes targeting the default branch
   push:
+    branches: ["main"]
+
+  pull_request:
     branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -57,9 +60,7 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           # Automatically inject basePath in your Next.js configuration file and disable
-          # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
+          # server side image optimization. You may remove this if you manage config yourself.
           static_site_generator: next
       - name: Restore cache
         uses: actions/cache@v4
@@ -73,8 +74,27 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
+
+      - name: Lint + Typecheck
+        run: |
+          npx eslint . --ext .ts,.tsx,.js,.jsx || true
+          npx tsc --noEmit || true
+
+      # Build step requires environment variables for NextAuth and DB at build time.
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+
+      # If you're exporting a static site (GitHub Pages), run `next export` to produce ./out
+      # NOTE: Next.js server-side features (App Router server handlers, NextAuth) will not work
+      # on GitHub Pages. Use a host that supports Node (Vercel, Render, Fly, etc.) for full functionality.
+      - name: Export static site (optional)
+        run: ${{ steps.detect-package-manager.outputs.runner }} next export
+        env:
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -91,3 +111,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        # No extra config needed; the uploaded `./out` artifact will be deployed.

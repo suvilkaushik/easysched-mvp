@@ -111,7 +111,7 @@ function AuthControls() {
   return (
     <div className="flex items-center space-x-3">
       <span className="text-sm text-gray-700">
-        {(session as any).user?.name || (session as any).user?.email}
+        {session.user?.name || session.user?.email}
       </span>
       <button
         onClick={() => signOut()}

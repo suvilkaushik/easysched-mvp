@@ -2,6 +2,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import * as bcrypt from "bcrypt";
 import argon2 from "argon2";
 import type { NextAuthOptions, Session } from "next-auth";
+import type { User as AppUser } from "@/types";
 import { getServerSession as nextAuthGetServerSession } from "next-auth";
 import { getDb } from "./mongodb";
 
@@ -43,22 +44,33 @@ export const authOptions: NextAuthOptions = {
           credentials.password
         );
         if (!match) return null;
-        return {
+        // Return a minimal user object matching our `User` interface
+        const returnedUser: AppUser = {
           id: user._id.toString(),
           email: user.email,
           name: user.name || user.email,
-        } as any;
+          role: (user.role as AppUser["role"]) || "client",
+        };
+        return returnedUser;
       },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = (user as any).id;
+      const maybeId = (user as unknown as { id?: string })?.id;
+      if (typeof maybeId === "string") {
+        (token as unknown as Record<string, unknown>).id = maybeId;
+      }
       return token;
     },
     async session({ session, token }) {
-      (session as any).user.id = (token as any).id;
+      const maybeId = (token as unknown as Record<string, unknown>).id as
+        | string
+        | undefined;
+      if (session.user && maybeId) {
+        (session.user as unknown as { id?: string }).id = maybeId;
+      }
       return session;
     },
   },
@@ -68,7 +80,12 @@ export default authOptions;
 
 export async function getServerAuthSession(): Promise<Session | null> {
   try {
-    const session = await nextAuthGetServerSession(authOptions as any);
+    // nextAuthGetServerSession accepts (req?, res?, options?) but in this app we only pass options
+    const session = await nextAuthGetServerSession(
+      undefined as any,
+      undefined as any,
+      authOptions as NextAuthOptions
+    );
     return session as Session | null;
   } catch (err) {
     return null;

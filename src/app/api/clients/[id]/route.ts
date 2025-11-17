@@ -2,17 +2,23 @@ import { NextResponse } from "next/server";
 import getDb from "@/lib/mongodb";
 import { getServerAuthSession } from "@/lib/auth";
 import { ObjectId } from "mongodb";
+import type { Session } from "next-auth";
 
-async function requireSession() {
+async function requireSession(): Promise<Session> {
   const session = await getServerAuthSession();
   if (!session) throw new Error("unauthorized");
   return session;
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+type RouteContext =
+  | { params: { id: string } }
+  | { params: Promise<{ id: string }> };
+export async function GET(_: Request, context: RouteContext) {
   try {
     const session = await requireSession();
-    const userId = (session as any).user?.id;
+    const userId = (session.user as { id?: string } | undefined)?.id;
+    const params =
+      context.params instanceof Promise ? await context.params : context.params;
     const id = params.id;
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
     const db = await getDb();
@@ -33,24 +39,24 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       updatedAt: doc.updatedAt || null,
     };
     return NextResponse.json({ client });
-  } catch (err: any) {
-    if (err.message === "unauthorized")
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "unauthorized")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
-    const userId = (session as any).user?.id;
+    const userId = (session.user as { id?: string } | undefined)?.id;
+    const params =
+      context.params instanceof Promise ? await context.params : context.params;
     const id = params.id;
-    const body = await request.json().catch(() => null);
-    if (!id || !body)
+    const bodyRaw: unknown = await request.json().catch(() => null);
+    if (!id || typeof bodyRaw !== "object" || bodyRaw === null)
       return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    const body = bodyRaw as Record<string, unknown>;
     const db = await getDb();
     const doc = await db
       .collection("clients")
@@ -59,10 +65,24 @@ export async function PUT(
     if (doc.owner && doc.owner !== userId)
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-    const update: any = { updatedAt: new Date() };
-    if (body.name !== undefined) update.name = body.name;
-    if (body.email !== undefined) update.email = body.email;
-    if (body.phone !== undefined) update.phone = body.phone;
+    const update: Partial<{
+      name: string;
+      email: string | null;
+      phone: string | null;
+      updatedAt: Date;
+    }> = { updatedAt: new Date() };
+    if ("name" in body && typeof body.name === "string")
+      update.name = body.name;
+    if (
+      "email" in body &&
+      (typeof body.email === "string" || body.email === null)
+    )
+      update.email = body.email as string | null;
+    if (
+      "phone" in body &&
+      (typeof body.phone === "string" || body.phone === null)
+    )
+      update.phone = body.phone as string | null;
 
     await db
       .collection("clients")
@@ -83,20 +103,19 @@ export async function PUT(
       };
     }
     return NextResponse.json({ client });
-  } catch (err: any) {
-    if (err.message === "unauthorized")
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "unauthorized")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  _: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_: Request, context: RouteContext) {
   try {
     const session = await requireSession();
-    const userId = (session as any).user?.id;
+    const userId = (session.user as { id?: string } | undefined)?.id;
+    const params =
+      context.params instanceof Promise ? await context.params : context.params;
     const id = params.id;
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
     const db = await getDb();
@@ -109,8 +128,8 @@ export async function DELETE(
 
     await db.collection("clients").deleteOne({ _id: new ObjectId(id) });
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    if (err.message === "unauthorized")
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "unauthorized")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }

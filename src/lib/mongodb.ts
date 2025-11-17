@@ -8,7 +8,7 @@ let cachedDb: Db | null = null;
 
 export async function getClient(): Promise<MongoClient> {
   if (cachedClient) return cachedClient;
-  const client = new MongoClient(uri);
+  const client = new MongoClient(uri as string);
   await client.connect();
   cachedClient = client;
   return client;
@@ -21,7 +21,7 @@ export async function getDb(dbName?: string): Promise<Db> {
     dbName ||
     client.options?.dbName ||
     process.env.MONGODB_DB ||
-    (uri && uri.split("/").pop().split("?")[0]);
+    ((uri as string).split("/").pop() as string).split("?")[0];
   if (!name)
     throw new Error(
       "Database name not provided (pass dbName or set MONGODB_DB)"

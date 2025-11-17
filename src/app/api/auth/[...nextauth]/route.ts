@@ -3,6 +3,7 @@ import authOptions from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-const handler = NextAuth(authOptions as any);
+// authOptions is already strongly typed in `src/lib/auth.ts`
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
