@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Prevent layout shifts and ensure consistent logo sizing */
+nav h1 {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
