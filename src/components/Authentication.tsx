@@ -30,11 +30,25 @@ export default function Authentication() {
 
         <div className="w-1/5 flex flex-col justify-center items-center bg-white shadow-lg p-8">
           <div className="w-full max-w-sm">
+            <div className="mb-4">
+              <div className="bg-yellow-100 border-l-4 border-yellow-400 text-yellow-700 px-4 py-2 rounded">
+                <strong className="block">PREVIEW DEPLOYMENT</strong>
+                <span className="text-sm">
+                  This is a preview of branch{" "}
+                  <span className="font-mono">suvilkaushik</span>. Do not use
+                  for production.
+                </span>
+              </div>
+            </div>
+
             <h1 className="text-2xl font-semibold mb-6 text-black">Sign In</h1>
 
             <form className="space-y-4 text-black" onSubmit={handleSubmit}>
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="email">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="email"
+                >
                   Email
                 </label>
                 <input
@@ -48,7 +62,10 @@ export default function Authentication() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="password">
+                <label
+                  className="block text-sm font-medium mb-1"
+                  htmlFor="password"
+                >
                   Password
                 </label>
                 <input
