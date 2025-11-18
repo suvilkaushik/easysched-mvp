@@ -19,6 +19,12 @@ jobs:
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
       NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
       NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+      # Vercel deployment secrets
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # Optional: set to 'true' to sync these GitHub secrets into Vercel Preview envs
+      SYNC_VERCEL_ENV: ${{ secrets.SYNC_VERCEL_ENV }}
 
     steps:
       - name: Checkout
@@ -32,8 +38,55 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate required secrets
+        run: |
+          missing=()
+          required=(VERCEL_TOKEN)
+          for v in "${required[@]}"; do
+            if [ -z "${!v:-}" ]; then
+              missing+=("$v")
+            fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "Missing required secrets: ${missing[*]}"
+            echo "Please add these to the repository Secrets (Settings → Secrets → Actions)."
+            exit 1
+          fi
+          # Warn about optional but recommended secrets
+          warn=()
+          recommended=(VERCEL_ORG_ID VERCEL_PROJECT_ID MONGODB_URI NEXTAUTH_SECRET)
+          for v in "${recommended[@]}"; do
+            if [ -z "${!v:-}" ]; then
+              warn+=("$v")
+            fi
+          done
+          if [ ${#warn[@]} -ne 0 ]; then
+            echo "Warning: the following recommended secrets are not set: ${warn[*]}"
+            echo "The deployment may be missing environment variables or fail; consider adding them."
+          fi
+
       - name: Build
         run: npm run build
+
+      - name: (Optional) Sync GitHub secrets into Vercel Preview envs
+        if: env.SYNC_VERCEL_ENV == 'true' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != ''
+        env:
+          # List of secret names to sync; values come from job envs above
+          SECRETS_TO_SYNC: "MONGODB_URI MONGODB_DB NEXTAUTH_SECRET NEXTAUTH_URL NEXT_PUBLIC_API_URL"
+        run: |
+          set -euo pipefail
+          echo "SYNC_VERCEL_ENV is true — syncing selected secrets into Vercel Preview environment"
+          for name in $SECRETS_TO_SYNC; do
+            val="${!name:-}"
+            if [ -z "$val" ]; then
+              echo "Skipping $name (empty)"
+              continue
+            fi
+            echo "Adding $name to Vercel (preview)"
+            # Use vercel env add to add the variable to the Preview environment.
+            # This will persist the variable in the Vercel project; ensure you want this.
+            npx vercel env add "$name" "$val" preview --token "$VERCEL_TOKEN" --yes || true
+          done
 
       - name: Deploy to Vercel (preview)
         id: vercel
