@@ -44,15 +44,21 @@ jobs:
         run: |
           set -euo pipefail
           echo "Deploying to Vercel (preview)..."
-          out=$(npx vercel --token "$VERCEL_TOKEN" --confirm --no-clipboard 2>&1) || true
-          echo "VERCEL_OUTPUT<<EOF" >> $GITHUB_OUTPUT
-          echo "$out" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          url=$(echo "$out" | egrep -o "https?://[^"]+vercel\.app[^"]*" | head -n1 || true)
-          if [ -z "$url" ]; then
-            url=$(echo "$out" | egrep -o "https?://[^"]+" | head -n1 || true)
+          # Run the vercel CLI and capture output (don't fail the step on CLI non-zero exit)
+          out=$(npx vercel --token "$VERCEL_TOKEN" --confirm --no-clipboard 2>&1 || true)
+
+          # Extract a preview URL from the CLI output. Prefer vercel.app URLs but fall back to any URL.
+          preview_url=$(echo "$out" | egrep -o "https?://[^\" ]+vercel\.app[^\" ]*" | head -n1 || true)
+          if [ -z "$preview_url" ]; then
+            preview_url=$(echo "$out" | egrep -o "https?://[^\" ]+" | head -n1 || true)
           fi
-          echo "preview_url=$url" >> $GITHUB_OUTPUT
+
+          # Export the preview_url so subsequent steps can read it
+          echo "preview_url=$preview_url" >> $GITHUB_OUTPUT
+
+          # Also write the raw CLI output to the job summary for debugging (optional)
+          echo 'Vercel CLI output:'
+          echo "$out"
 
       - name: Comment on Pull Request with Preview URL
         if: github.event_name == 'pull_request'
