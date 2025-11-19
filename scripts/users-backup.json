@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "691bec77f003dd59d3a7c8b3",
+    "email": "alice@example.com",
+    "name": "Alice",
+    "passwordHash": "$2b$10$LRy/8KjOh8RABJCNYEdYIut5BIe8gAIK39ef38Tg9sq/vWnowTkr.",
+    "createdAt": "2025-11-18T03:48:07.515Z",
+    "updatedAt": "2025-11-18T03:48:07.515Z"
+  },
+  {
+    "_id": "691bec77f003dd59d3a7c8b4",
+    "email": "bob@example.com",
+    "name": "Bob",
+    "passwordHash": "$2b$10$LvMqoO0nHvvoTetTFDAZDer/x.KQIpkpKwvCBTvygr.vBnWyZrBCq",
+    "createdAt": "2025-11-18T03:48:07.611Z",
+    "updatedAt": "2025-11-18T03:48:07.611Z"
+  },
+  {
+    "_id": "691bec77f003dd59d3a7c8b5",
+    "email": "carol@example.com",
+    "name": "Carol",
+    "passwordHash": "$2b$10$pqhuf7SeMgu4pf8yCeeuM.5.WkL4lW9JNB5xjsnn2yrMrzwEfS4cK",
+    "createdAt": "2025-11-18T03:48:07.679Z",
+    "updatedAt": "2025-11-18T03:48:07.679Z"
+  }
+]

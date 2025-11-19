@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function Authentication() {
   const router = useRouter();
@@ -10,12 +12,61 @@ export default function Authentication() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Attempt sign in using NextAuth Credentials provider. We use redirect:false
+    // so we can surface errors and then manually navigate on success.
+    (async () => {
+      try {
+        const res = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        } as any);
 
-    // (Optional) authentication logic here...
+        // Some next-auth builds return undefined when redirect:false isn't supported;
+        // treat lack of an error redirect as success if we can fetch a session.
+        if ((res as any)?.error) {
+          // Show a simple alert for now; UI can be improved later.
+          alert("Sign in failed: " + (res as any).error);
+          return;
+        }
 
-    // After successful sign-in:
-    router.push("/dashboard"); // 👈 Next.js navigation
+        // Fetch server session to obtain the id saved by NextAuth callbacks.
+        const sessRes = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
+        if (!sessRes.ok) {
+          alert("Sign in succeeded but could not fetch session");
+          router.push("/dashboard");
+          return;
+        }
+
+        const sess = await sessRes.json();
+        const sessionId = sess?.user?.id || sess?.id || sess?.sub || null;
+        if (sessionId) {
+          localStorage.setItem("easysched:sessionId", sessionId);
+        } else {
+          // If no id is present, still store an identifier fallback (email)
+          if (sess?.user?.email) {
+            localStorage.setItem("easysched:sessionId", sess.user.email);
+          }
+        }
+
+        router.push("/dashboard");
+      } catch (err: any) {
+        console.error("Sign in failed", err);
+        alert("Sign in failed: " + (err?.message || String(err)));
+      }
+    })();
   };
+
+  // Clear any stale sessionId on mount to avoid showing wrong user after sign-out
+  useEffect(() => {
+    try {
+      localStorage.removeItem("easysched:sessionId");
+    } catch (e) {
+      /* ignore */
+    }
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
