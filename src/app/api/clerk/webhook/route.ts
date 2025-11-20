@@ -16,7 +16,10 @@ async function verifyClerkWebhook(body: string, signature: string | null) {
       return true;
     }
   } catch (err) {
-    console.warn("Clerk SDK webhook verify failed:", (err as any)?.message || err);
+    console.warn(
+      "Clerk SDK webhook verify failed:",
+      (err as any)?.message || err
+    );
   }
 
   // If SDK verification not available, fail closed.

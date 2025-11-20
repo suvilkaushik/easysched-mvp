@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 export const dynamic = "force-dynamic";
 import { getUserModel } from "@/models/User";
 
 export async function POST(request: Request) {
   // Verify the request is made by an authenticated Clerk session
-  // getAuth requires the request object in this runtime
-  const auth = getAuth(request as unknown as Request);
+  // getAuth requires a NextRequest-like object in this runtime
+  const auth = getAuth(request as unknown as NextRequest);
   const callerId = auth.userId;
   if (!callerId) return new NextResponse("unauthenticated", { status: 401 });
 
