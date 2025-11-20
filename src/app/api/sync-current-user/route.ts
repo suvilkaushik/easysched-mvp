@@ -6,7 +6,8 @@ import { getUserModel } from "@/models/User";
 
 export async function POST(request: Request) {
   // Verify the request is made by an authenticated Clerk session
-  const auth = getAuth();
+  // getAuth requires the request object in this runtime
+  const auth = getAuth(request as unknown as Request);
   const callerId = auth.userId;
   if (!callerId) return new NextResponse("unauthenticated", { status: 401 });
 
