@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable static export for GitHub Pages deployment
-  output: "export",
+  // Enable static export for GitHub Pages deployment only during CI Pages build
+  output: process.env.GITHUB_ACTIONS === "true" ? "export" : undefined,
   // Base path for GitHub Pages (repository name)
   // Only enable the `basePath` when building in GitHub Actions for Pages.
   // Vercel sets NODE_ENV='production' as well, so relying on NODE_ENV alone

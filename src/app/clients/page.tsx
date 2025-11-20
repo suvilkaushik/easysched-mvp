@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { mockClients } from '@/lib/data';
-import { formatDate } from '@/lib/utils';
-import { Client } from '@/types';
+import React, { useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { mockClients } from "@/lib/data";
+import { formatDate } from "@/lib/utils";
+import { Client } from "@/types";
 
 export default function ClientsPage() {
+  const { isSignedIn } = useUser();
   const [clients, setClients] = useState<Client[]>(mockClients);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [viewingClientId, setViewingClientId] = useState<string | null>(null);
@@ -37,18 +39,18 @@ export default function ClientsPage() {
   };
 
   const handleSave = (clientId: string) => {
-    setClients(clients.map(client => 
-      client.id === clientId
-        ? { ...client, ...editFormData }
-        : client
-    ));
+    setClients(
+      clients.map((client) =>
+        client.id === clientId ? { ...client, ...editFormData } : client
+      )
+    );
     setEditingClientId(null);
     setEditFormData({});
   };
 
   const handleDelete = (clientId: string) => {
-    if (confirm('Are you sure you want to delete this client?')) {
-      setClients(clients.filter(client => client.id !== clientId));
+    if (confirm("Are you sure you want to delete this client?")) {
+      setClients(clients.filter((client) => client.id !== clientId));
       if (editingClientId === clientId) {
         setEditingClientId(null);
         setEditFormData({});
@@ -60,11 +62,22 @@ export default function ClientsPage() {
   };
 
   const handleInputChange = (field: keyof Client, value: string) => {
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
+
+  if (!isSignedIn)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">
+            Please sign in to view clients
+          </h2>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,7 +91,7 @@ export default function ClientsPage() {
             Add Client
           </button>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -101,51 +114,71 @@ export default function ClientsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {clients.map(client => {
+              {clients.map((client) => {
                 const isEditing = editingClientId === client.id;
                 const isViewing = viewingClientId === client.id;
-                
+
                 return (
                   <React.Fragment key={client.id}>
-                    <tr className={isEditing || isViewing ? 'bg-blue-50' : 'hover:bg-gray-50'}>
+                    <tr
+                      className={
+                        isEditing || isViewing
+                          ? "bg-blue-50"
+                          : "hover:bg-gray-50"
+                      }
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editFormData.name || ''}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            value={editFormData.name || ""}
+                            onChange={(e) =>
+                              handleInputChange("name", e.target.value)
+                            }
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm font-medium text-gray-900"
                           />
                         ) : (
-                          <div className="text-sm font-medium text-gray-900">{client.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {client.name}
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isEditing ? (
                           <input
                             type="email"
-                            value={editFormData.email || ''}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            value={editFormData.email || ""}
+                            onChange={(e) =>
+                              handleInputChange("email", e.target.value)
+                            }
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-gray-600"
                           />
                         ) : (
-                          <div className="text-sm text-gray-600">{client.email}</div>
+                          <div className="text-sm text-gray-600">
+                            {client.email}
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isEditing ? (
                           <input
                             type="tel"
-                            value={editFormData.phone || ''}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            value={editFormData.phone || ""}
+                            onChange={(e) =>
+                              handleInputChange("phone", e.target.value)
+                            }
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-gray-600"
                           />
                         ) : (
-                          <div className="text-sm text-gray-600">{client.phone}</div>
+                          <div className="text-sm text-gray-600">
+                            {client.phone}
+                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">{formatDate(client.createdAt)}</div>
+                        <div className="text-sm text-gray-600">
+                          {formatDate(client.createdAt)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {isEditing ? (
@@ -169,7 +202,7 @@ export default function ClientsPage() {
                               onClick={() => handleView(client)}
                               className="text-blue-600 hover:text-blue-900"
                             >
-                              {isViewing ? 'Hide' : 'View'}
+                              {isViewing ? "Hide" : "View"}
                             </button>
                             <button
                               onClick={() => handleEdit(client)}
@@ -191,23 +224,41 @@ export default function ClientsPage() {
                       <tr className="bg-blue-50">
                         <td colSpan={5} className="px-6 py-4">
                           <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Client Details</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                              Client Details
+                            </h3>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <p className="text-sm font-medium text-gray-500">Name</p>
-                                <p className="text-sm text-gray-900 mt-1">{client.name}</p>
+                                <p className="text-sm font-medium text-gray-500">
+                                  Name
+                                </p>
+                                <p className="text-sm text-gray-900 mt-1">
+                                  {client.name}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-500">Email</p>
-                                <p className="text-sm text-gray-900 mt-1">{client.email}</p>
+                                <p className="text-sm font-medium text-gray-500">
+                                  Email
+                                </p>
+                                <p className="text-sm text-gray-900 mt-1">
+                                  {client.email}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-500">Phone</p>
-                                <p className="text-sm text-gray-900 mt-1">{client.phone}</p>
+                                <p className="text-sm font-medium text-gray-500">
+                                  Phone
+                                </p>
+                                <p className="text-sm text-gray-900 mt-1">
+                                  {client.phone}
+                                </p>
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-500">Joined</p>
-                                <p className="text-sm text-gray-900 mt-1">{formatDate(client.createdAt)}</p>
+                                <p className="text-sm font-medium text-gray-500">
+                                  Joined
+                                </p>
+                                <p className="text-sm text-gray-900 mt-1">
+                                  {formatDate(client.createdAt)}
+                                </p>
                               </div>
                             </div>
                           </div>

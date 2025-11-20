@@ -1,18 +1,19 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import StatsOverview from "@/components/dashboard/StatsOverview";
 import UpcomingAppointments from "@/components/dashboard/UpcomingAppointments";
-import { useUser } from "@clerk/nextjs";
 
-export default function Home() {
+export default function DashboardPage() {
+  const { isSignedIn } = useUser();
+  if (!isSignedIn) return null;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-2">Welcome to your EasySched CRM</p>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">Welcome to your EasySched CRM</p>
         </div>
 
         <StatsOverview />

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Navigation from "@/components/Navigation";
+import Navigation, { NavigationWithSync } from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "EasySched CRM",
@@ -16,11 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased flex flex-col min-h-screen">
-        <Navigation />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <ClerkProvider>
+          <NavigationWithSync />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ClerkProvider>
       </body>
     </html>
   );
