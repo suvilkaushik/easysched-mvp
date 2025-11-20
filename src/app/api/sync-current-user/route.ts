@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 export const dynamic = "force-dynamic";

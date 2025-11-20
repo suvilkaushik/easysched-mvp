@@ -2,7 +2,7 @@
 
 import StatsOverview from "@/components/dashboard/StatsOverview";
 import UpcomingAppointments from "@/components/dashboard/UpcomingAppointments";
-import { useUser } from "@clerk/nextjs";
+// `useUser` removed — header handles sign-in UI
 
 export default function Home() {
   return (

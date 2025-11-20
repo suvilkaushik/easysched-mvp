@@ -4,7 +4,7 @@ import connectToDatabase from "@/lib/db";
 export interface IEmailAddress {
   id?: string;
   emailAddress: string;
-  verification?: any;
+  verification?: unknown;
 }
 
 export interface IExternalAccount {
@@ -26,9 +26,9 @@ export interface IUser extends Document {
   imageUrl?: string | null;
   hasImage?: boolean;
   passwordEnabled?: boolean;
-  publicMetadata?: Record<string, any>;
-  privateMetadata?: Record<string, any>;
-  unsafeMetadata?: Record<string, any>;
+  publicMetadata?: Record<string, unknown>;
+  privateMetadata?: Record<string, unknown>;
+  unsafeMetadata?: Record<string, unknown>;
   externalAccounts?: IExternalAccount[];
   inactive?: boolean;
   seedPassword?: string;
@@ -67,7 +67,7 @@ const modelName = "User";
 let User: Model<IUser>;
 try {
   User = mongoose.model<IUser>(modelName);
-} catch (e) {
+} catch (_) {
   User = mongoose.model<IUser>(modelName, UserSchema);
 }
 

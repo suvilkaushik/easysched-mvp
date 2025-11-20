@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -32,7 +33,8 @@ export async function connectToDatabase() {
       // useUnifiedTopology and useNewUrlParser are defaults in modern mongoose
     } as mongoose.ConnectOptions;
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);
+    // MONGODB_URI is checked above; assert non-null for TS
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((m) => m);
   }
 
   cached.conn = await cached.promise;

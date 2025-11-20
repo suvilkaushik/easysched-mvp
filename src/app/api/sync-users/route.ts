@@ -1,7 +1,7 @@
 // Full replacement: clean sync endpoint implementation
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { getUserModel } from "@/models/User";
-import { createClerkClient } from "@clerk/clerk-sdk-node";
 
 export const dynamic = "force-dynamic";
 

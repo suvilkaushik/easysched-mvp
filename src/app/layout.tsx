@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Navigation, { NavigationWithSync } from "@/components/Navigation";
+import { NavigationWithSync } from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
