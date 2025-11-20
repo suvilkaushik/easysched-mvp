@@ -10,15 +10,13 @@ async function verifyClerkWebhook(body: string, signature: string | null) {
 
   try {
     const clerk = await import("@clerk/clerk-sdk-node");
-    if (clerk?.Webhook && typeof clerk.Webhook.verify === "function") {
-      clerk.Webhook.verify(body, signature, secret);
+    const sdk: any = clerk;
+    if (sdk.Webhook && typeof sdk.Webhook.verify === "function") {
+      sdk.Webhook.verify(body, signature, secret);
       return true;
     }
   } catch (err) {
-    console.warn(
-      "Clerk SDK webhook verify failed:",
-      (err as any)?.message || err
-    );
+    console.warn("Clerk SDK webhook verify failed:", (err as any)?.message || err);
   }
 
   // If SDK verification not available, fail closed.
@@ -128,7 +126,7 @@ export async function POST(req: NextRequest) {
   try {
     payload = JSON.parse(bodyText);
   } catch (err) {
-    console.error("Invalid JSON payload");
+    console.error("Invalid JSON payload", err);
     return new NextResponse("Invalid payload", { status: 400 });
   }
 

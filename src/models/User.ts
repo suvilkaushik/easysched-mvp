@@ -67,7 +67,7 @@ const modelName = "User";
 let User: Model<IUser>;
 try {
   User = mongoose.model<IUser>(modelName);
-} catch (_) {
+} catch {
   User = mongoose.model<IUser>(modelName, UserSchema);
 }
 
