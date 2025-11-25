@@ -10,12 +10,12 @@ import { ObjectId } from "mongodb";
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { userId } = await auth();
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const { id } = params;
+  const { id } = await params;
   if (!id || !ObjectId.isValid(id)) {
     return new NextResponse("Invalid client ID", { status: 400 });
   }
