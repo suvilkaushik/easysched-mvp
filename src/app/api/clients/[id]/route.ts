@@ -36,3 +36,7 @@ export async function DELETE(
 
   return new NextResponse(null, { status: 204 });
 }
+
+export async function generateStaticParams() {
+  return [];
+}
