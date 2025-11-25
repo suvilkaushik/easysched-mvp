@@ -29,7 +29,9 @@ export async function DELETE(
   });
 
   if (result.deletedCount === 0) {
-    return new NextResponse("Client not found or not authorized", { status: 404 });
+    return new NextResponse("Client not found or not authorized", {
+      status: 404,
+    });
   }
 
   return new NextResponse(null, { status: 204 });
