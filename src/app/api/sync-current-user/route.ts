@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse, NextRequest } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 import { getUserModel } from "@/models/User";
 
 export async function POST(request: Request) {

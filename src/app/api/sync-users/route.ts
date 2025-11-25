@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { getUserModel } from "@/models/User";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
 function generatePassword() {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
