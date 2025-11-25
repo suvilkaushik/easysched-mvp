@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { clientPromise } from "../../../lib/mongodb";
 import { createClientSchema } from "../../../types";
 
+export const dynamic = "force-static";
+
 /**
  * GET /api/clients
  * - Returns all clients owned by the logged-in Clerk user
