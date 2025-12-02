@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { clientPromise } from "../../../lib/mongodb";
 import { createClientSchema } from "../../../types";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 /**
  * GET /api/clients
@@ -17,7 +17,7 @@ export async function GET() {
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
   const client = await clientPromise;
-  const db = client.db("easysched_dev_suv");
+  const db = client.db(process.env.MONGODB_DB ?? "easysched_dev_suv");
 
   const clients = await db
     .collection("clients")
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   }
 
   const client = await clientPromise;
-  const db = client.db("easysched_dev_suv");
+  const db = client.db(process.env.MONGODB_DB ?? "easysched_dev_suv");
 
   const toInsert = {
     ownerClerkId: userId,
