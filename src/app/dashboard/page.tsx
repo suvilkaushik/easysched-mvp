@@ -9,19 +9,21 @@ export default function DashboardPage() {
   if (!isSignedIn) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome to your EasySched CRM</p>
-        </div>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <header className="space-y-2">
+        <h1 className="text-4xl font-extrabold tracking-wide text-white">
+          Dashboard
+        </h1>
+        <p className="text-sm sm:text-base text-slate-300">
+          Welcome to your EasySched CRM
+        </p>
+      </header>
 
-        <StatsOverview />
+      <StatsOverview />
 
-        <div className="grid grid-cols-1 gap-6">
-          <UpcomingAppointments />
-        </div>
-      </main>
+      <section className="grid grid-cols-1 gap-6">
+        <UpcomingAppointments />
+      </section>
     </div>
   );
 }
