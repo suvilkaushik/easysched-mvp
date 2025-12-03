@@ -1,21 +1,35 @@
-import StatsOverview from '@/components/dashboard/StatsOverview';
-import UpcomingAppointments from '@/components/dashboard/UpcomingAppointments';
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { SignIn } from "@clerk/nextjs";
 
 export default function Home() {
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [isSignedIn, router]);
+
+  if (isSignedIn) return null;
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome to your EasySched CRM</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to EasySched
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Access your CRM dashboard
+          </p>
         </div>
-        
-        <StatsOverview />
-        
-        <div className="grid grid-cols-1 gap-6">
-          <UpcomingAppointments />
-        </div>
-      </main>
+        <SignIn />
+      </div>
     </div>
   );
 }

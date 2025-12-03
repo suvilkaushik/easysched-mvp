@@ -1,14 +1,22 @@
-import Calendar from '@/components/calendar/Calendar';
+"use client";
+
+import Calendar from "@/components/calendar/Calendar";
+import { useUser } from "@clerk/nextjs";
 
 export default function CalendarPage() {
+  const { isSignedIn } = useUser();
+  if (!isSignedIn) return null;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
-          <p className="text-gray-600 mt-2">View and manage your appointments</p>
+          <p className="text-gray-600 mt-2">
+            View and manage your appointments
+          </p>
         </div>
-        
+
         <Calendar />
       </main>
     </div>

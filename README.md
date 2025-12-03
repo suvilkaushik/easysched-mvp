@@ -87,6 +87,18 @@ src/
 ### Client Portal
 ![Client Portal](https://github.com/user-attachments/assets/8247a7b8-212a-4b39-82a2-83d27ef10a2f)
 
+## Deployment
+
+This application is configured for automatic deployment to GitHub Pages when pushing to the `main` branch.
+
+### Quick Deploy to GitHub Pages
+
+1. Go to your repository Settings → Pages
+2. Set Source to "GitHub Actions"
+3. Push to `main` branch - deployment will happen automatically!
+
+For detailed deployment instructions, including Vercel setup, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 ## Next Steps
 
 1. **Database Integration**: Replace mock data with a real database (PostgreSQL, MongoDB, etc.)
@@ -96,7 +108,6 @@ src/
 5. **AI Voice Integration**: Integrate with voice AI services for the receptionist feature
 6. **iMessage Integration**: Connect with Apple's iMessage Business API
 7. **Testing**: Add comprehensive unit and integration tests
-8. **Deployment**: Deploy to production (Vercel, AWS, etc.)
 
 ## Contributing
 

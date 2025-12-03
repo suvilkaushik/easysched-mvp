@@ -1,16 +1,35 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
+import { useEffect } from "react";
 
 export default function Navigation() {
   const pathname = usePathname();
-  
+  const { isSignedIn, isLoaded } = useUser();
+
   const navItems = [
-    { name: 'Dashboard', href: '/', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { name: 'Calendar', href: '/calendar', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
-    { name: 'Messages', href: '/messages', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-    { name: 'Clients', href: '/clients', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    {
+      name: "Dashboard",
+      href: "/",
+      icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+    },
+    {
+      name: "Calendar",
+      href: "/calendar",
+      icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+    },
+    {
+      name: "Messages",
+      href: "/messages",
+      icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+    },
+    {
+      name: "Clients",
+      href: "/clients",
+      icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
+    },
   ];
 
   return (
@@ -23,19 +42,39 @@ export default function Navigation() {
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                // Normalize pathname for comparison (handle trailing slashes)
+                const normalizedPathname = pathname?.endsWith("/")
+                  ? pathname.slice(0, -1) || "/"
+                  : pathname;
+                const normalizedHref =
+                  item.href === "/"
+                    ? "/"
+                    : item.href.endsWith("/")
+                    ? item.href.slice(0, -1)
+                    : item.href;
+                const isActive = normalizedPathname === normalizedHref;
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                       isActive
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? "border-blue-500 text-gray-900"
+                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
                     }`}
                   >
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d={item.icon}
+                      />
                     </svg>
                     {item.name}
                   </Link>
@@ -43,16 +82,58 @@ export default function Navigation() {
               })}
             </div>
           </div>
-          <div className="flex items-center">
-            <Link
-              href="/client-portal"
-              className="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
-              Client Portal
-            </Link>
+          <div className="flex items-center space-x-4">
+            {isLoaded ? (
+              isSignedIn ? (
+                <UserButton afterSignOutUrl="/" />
+              ) : (
+                <SignInButton mode="modal">
+                  <button
+                    aria-label="Sign in"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12H3m12 0l-4-4m4 4l-4 4M21 12v6a2 2 0 01-2 2H7"
+                      />
+                    </svg>
+                    Sign in
+                  </button>
+                </SignInButton>
+              )
+            ) : (
+              // While Clerk loads, show nothing to avoid flicker/hydration mismatch
+              <div style={{ width: 40 }} />
+            )}
           </div>
         </div>
       </div>
     </nav>
   );
+}
+
+// Client-side sync: when a user signs in, call server to ensure Mongo has their record.
+export function NavigationWithSync() {
+  const { user } = useUser();
+  useEffect(() => {
+    if (user && user.id) {
+      // fire-and-forget
+      fetch("/api/sync-current-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clerkId: user.id }),
+      }).catch((e) => console.warn("sync-current-user failed", e));
+    }
+  }, [user]);
+
+  return <Navigation />;
 }
