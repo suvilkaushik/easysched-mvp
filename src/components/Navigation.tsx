@@ -33,88 +33,86 @@ export default function Navigation() {
   ];
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">EasySched</h1>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {navItems.map((item) => {
-                // Normalize pathname for comparison (handle trailing slashes)
-                const normalizedPathname = pathname?.endsWith("/")
-                  ? pathname.slice(0, -1) || "/"
-                  : pathname;
-                const normalizedHref =
-                  item.href === "/"
-                    ? "/"
-                    : item.href.endsWith("/")
-                    ? item.href.slice(0, -1)
-                    : item.href;
-                const isActive = normalizedPathname === normalizedHref;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                      isActive
-                        ? "border-blue-500 text-gray-900"
-                        : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
-                    }`}
-                  >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={item.icon}
-                      />
-                    </svg>
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </div>
+    <nav className="bg-white/10 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20">
+      <div className="flex flex-col flex-1 px-6 py-6">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg shadow-purple-900/60">
+            <span className="text-lg font-bold text-white">E</span>
           </div>
-          <div className="flex items-center space-x-4">
-            {isLoaded ? (
-              isSignedIn ? (
-                <UserButton afterSignOutUrl="/" />
-              ) : (
-                <SignInButton mode="modal">
-                  <button
-                    aria-label="Sign in"
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12H3m12 0l-4-4m4 4l-4 4M21 12v6a2 2 0 01-2 2H7"
-                      />
-                    </svg>
-                    Sign in
-                  </button>
-                </SignInButton>
-              )
+          <div>
+            <h1 className="text-lg font-bold text-white">EasySched</h1>
+            <p className="text-xs text-slate-400 uppercase tracking-wide">
+              CRM Dashboard
+            </p>
+          </div>
+        </div>
+
+        {/* Nav links */}
+        <div className="mt-8 space-y-1">
+          {navItems.map((item) => {
+            const normalizedPathname = pathname?.endsWith("/")
+              ? pathname.slice(0, -1) || "/"
+              : pathname;
+            const normalizedHref =
+              item.href === "/"
+                ? "/"
+                : item.href.endsWith("/")
+                ? item.href.slice(0, -1)
+                : item.href;
+            const isActive = normalizedPathname === normalizedHref;
+
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition 
+                  ${
+                    isActive
+                      ? "bg-white/10 text-white shadow-inner"
+                      : "text-slate-300 hover:bg-white/5 hover:text-white"
+                  }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={item.icon}
+                  />
+                </svg>
+                {item.name}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Bottom user area */}
+        <div className="mt-auto pt-6 border-t border-white/10 flex items-center justify-between">
+          <span className="text-xs text-slate-500">
+            Signed in as
+          </span>
+          {isLoaded ? (
+            isSignedIn ? (
+              <UserButton afterSignOutUrl="/" />
             ) : (
-              // While Clerk loads, show nothing to avoid flicker/hydration mismatch
-              <div style={{ width: 40 }} />
-            )}
-          </div>
+              <SignInButton mode="modal">
+                <button
+                  aria-label="Sign in"
+                  className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-indigo-500 hover:bg-indigo-600 text-white shadow"
+                >
+                  Sign in
+                </button>
+              </SignInButton>
+            )
+          ) : (
+            <div style={{ width: 40 }} />
+          )}
         </div>
       </div>
     </nav>
@@ -126,7 +124,6 @@ export function NavigationWithSync() {
   const { user } = useUser();
   useEffect(() => {
     if (user && user.id) {
-      // fire-and-forget
       fetch("/api/sync-current-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

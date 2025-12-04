@@ -16,13 +16,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased flex flex-col min-h-screen">
-        <ClerkProvider>
-          <NavigationWithSync />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </ClerkProvider>
-      </body>
+      <ClerkProvider>
+        <body className="antialiased min-h-screen bg-gradient-to-br from-[#00085f] via-[#4f5fff] to-[#56009c] text-slate-100">
+          <div className="flex min-h-screen">
+            {/* Left sidebar */}
+            <NavigationWithSync />
+
+            {/* Main area */}
+            <div className="flex flex-1 flex-col">
+              <main className="flex-1 px-4 sm:px-8 py-8">{children}</main>
+              <Footer />
+            </div>
+          </div>
+        </body>
+      </ClerkProvider>
     </html>
   );
 }
